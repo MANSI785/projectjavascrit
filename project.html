@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fairy Tale Image Slider</title>
+
+  <!-- Fairy Tale Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(
+        to top right,
+        rgba(226, 204, 149, 0.9),
+        rgba(8, 7, 8, 0.85),
+        rgba(37, 34, 21, 0.8)
+      );
+      background-size: 400% 400%;
+      animation: backgroundShift 15s ease infinite;
+      overflow: hidden;
+      font-family: 'Great Vibes', cursive;
+    }
+
+    @keyframes backgroundShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(white 1px, transparent 1px),
+                        radial-gradient(white 1px, transparent 1px);
+      background-size: 20px 20px, 40px 40px;
+      background-position: 0 0, 10px 10px;
+      opacity: 0.3;
+      animation: sparkle 5s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes sparkle {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-20px); }
+    }
+
+    .slider-container {
+      position: relative;
+      width: 80%;
+      max-width: 600px;
+      overflow: hidden;
+      text-align: center;
+      padding: 20px;
+      border: 6px double #fff7e6;
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.4),
+                  0 0 60px rgba(255, 200, 255, 0.2);
+      z-index: 1;
+    }
+
+    #sliderImage {
+      width: 100%;
+      border-radius: 15px;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    #sliderImage.show {
+      opacity: 1;
+    }
+
+    .caption {
+      position: relative;
+      margin-top: 10px;
+      font-size: 20px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      white-space: nowrap;
+      text-align: center;
+      animation: shimmer 4s infinite linear;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      background-image: linear-gradient(90deg, #fff 0%, #ffc8ff 50%, #fff 100%);
+      background-size: 200% auto;
+      z-index: 1;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% center;
+      }
+      100% {
+        background-position: -200% center;
+      }
+    }
+
+    button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: radial-gradient(circle, #fff1f7, #f7c9ff);
+      border: 2px solid #ffe6f2;
+      padding: 12px 16px;
+      font-size: 24px;
+      cursor: pointer;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(255, 204, 255, 0.8),
+                  0 0 20px rgba(255, 153, 255, 0.4);
+      transition: transform 0.3s, background 0.3s;
+      z-index: 2;
+    }
+
+    button:hover {
+      background: radial-gradient(circle, #ffffff, #f5c8e0);
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    #prevBtn {
+      left: 10px;
+    }
+
+    #nextBtn {
+      right: 10px;
+    }
+
+    .dots-container {
+      margin-top: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .dot {
+      display: inline-block;
+      height: 14px;
+      width: 14px;
+      margin: 6px;
+      background: radial-gradient(circle, #fff5fa, #f9d6ff);
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(255, 200, 255, 0.7);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .dot:hover {
+      transform: scale(1.3);
+      box-shadow: 0 0 10px rgba(255, 160, 255, 0.9);
+    }
+
+    .dot.active {
+      background: #ffffff;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 180, 255, 0.6);
+    }
+  </style>
+</head>
+<body>
+  <div class="slider-container" id="slider">
+    <button id="prevBtn">&#10094;</button>
+    <img id="sliderImage" src="" alt="Slider Image">
+    <div class="caption" id="captionText"></div>
+    <div class="dots-container" id="dotsContainer"></div>
+    <button id="nextBtn">&#10095;</button>
+  </div>
+
+  <!-- Optional: Background music -->
+  <audio id="bgMusic" autoplay loop>
+    <source src="https://cdn.pixabay.com/audio/2022/12/08/audio_539f71610e.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    const images = [
+      {
+        src: 'https://picsum.photos/id/1015/600/400',
+        caption: 'Nature - Lake and Mountains'
+      },
+      {
+        src: 'https://picsum.photos/id/1016/600/400',
+        caption: 'Forest Trail'
+      },
+      {
+        src: 'https://picsum.photos/id/1018/600/400',
+        caption: 'Sunny Beach'
+      },
+      {
+        src: 'https://picsum.photos/id/1020/600/400',
+        caption: 'Foggy Bridge'
+      }
+    ];
+
+    let currentIndex = 0;
+    let interval;
+
+    const sliderImage = document.getElementById('sliderImage');
+    const captionText = document.getElementById('captionText');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const dotsContainer = document.getElementById('dotsContainer');
+    const slider = document.getElementById('slider');
+
+    function updateImage() {
+      sliderImage.classList.remove('show');
+      captionText.classList.remove('show');
+      setTimeout(() => {
+        sliderImage.src = images[currentIndex].src;
+        sliderImage.alt = images[currentIndex].caption;
+        captionText.textContent = images[currentIndex].caption;
+        sliderImage.classList.add('show');
+        captionText.classList.add('show');
+        updateDots();
+      }, 100);
+    }
+
+    function updateDots() {
+      const dots = document.querySelectorAll('.dot');
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentIndex);
+      });
+    }
+
+    function createDots() {
+      images.forEach((_, index) => {
+        const dot = document.createElement('span');
+        dot.classList.add('dot');
+        dot.addEventListener('click', () => {
+          currentIndex = index;
+          updateImage();
+        });
+        dotsContainer.appendChild(dot);
+      });
+    }
+
+    prevBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+      updateImage();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % images.length;
+      updateImage();
+    });
+
+    function startSlider() {
+      interval = setInterval(() => {
+        currentIndex = (currentIndex + 1) % images.length;
+        updateImage();
+      }, 3000);
+    }
+
+    function stopSlider() {
+      clearInterval(interval);
+    }
+
+    slider.addEventListener('mouseover', stopSlider);
+    slider.addEventListener('mouseout', startSlider);
+
+    // Initialize
+    createDots();
+    updateImage();
+    startSlider();
+  </script>
+</body>
+</html>
